@@ -7,6 +7,7 @@
     <title>Payment Page</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.6.6/dist/umd/index.min.js"></script>
     <style>
         input[readonly] {
             pointer-events: none;
@@ -27,7 +28,7 @@
                 <input type="text" id="receiver" name="receiver" readonly><br><br>
             </div>
             <div class="form-group">
-                <label for="amount">Amount (in USDT (BNB)):</label>
+                <label for="amount">Amount (in BNB):</label>
                 <input type="text" id="amount" name="amount" readonly><br><br>
             </div>
             <button type="button" id="connectWalletBtn" onclick="connectWallet()">Connect Wallet</button>
@@ -417,13 +418,8 @@
                 return;
             }
 
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-                document.getElementById('receiver').value = receiver;
-                document.getElementById('amount').value = amount;
-            } else {
-                alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
-            }
+            document.getElementById('receiver').value = receiver;
+            document.getElementById('amount').value = amount;
         };
 
         async function connectWallet() {
@@ -439,7 +435,18 @@
                     console.error('User denied account access:', error);
                 }
             } else {
-                alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
+                const provider = new WalletConnectProvider.default({
+                    infuraId: "YOUR_INFURA_ID" // Required, replace with your own Infura project ID
+                });
+
+                await provider.enable();
+
+                web3 = new Web3(provider);
+                accounts = await web3.eth.getAccounts();
+                document.getElementById('sender').value = accounts[0];
+                document.getElementById('walletStatus').innerText = 'Wallet Connected';
+                document.getElementById('connectWalletBtn').style.display = 'none';
+                document.getElementById('payNowBtn').style.display = 'block';
             }
         }
 
