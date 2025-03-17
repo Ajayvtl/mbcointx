@@ -1,7 +1,7 @@
 {
-  "name": "txdapp",
+  "name": "NextPay",
   "version": "1.0.0",
-  "description": "MB COIN Transection Dapp",
+  "description": "NextPay",
   "main": "app.js",
   "scripts": {
     "build": "babel ./ --out-dir dist --ignore node_modules,views",
