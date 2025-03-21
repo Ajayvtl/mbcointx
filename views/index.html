@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Page</title>
+    <title>Payment Gatway Buy from USDT</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.6.6/dist/umd/index.min.js"></script>
@@ -16,26 +19,86 @@
 </head>
 
 <body>
-    <div class="container">
-        <h1>Payment Page</h1>
-        <form id="paymentForm">
-            <div class="form-group">
-                <label for="sender">Sender:</label>
-                <input type="text" id="sender" name="sender" readonly><br><br>
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="payment-cards text-center">
+            <h4 class="header-title">Payment<i class="fa-solid fa-shield-halved fsecure-icon"></i></h4>
+            <div class="transaction-info">
+                <p><strong style="color: white;">Transaction ID:</strong> <span id="ttransid"
+                        style="color: white;  float: right;">N/A</span></p>
+                <p><strong style="color: white;">Payable Amount:</strong> <span id="payableAmount"
+                        style="color: white;  float: right;">N/A</span></p>
+                <p><strong style="color: white;">Date & Time:</strong> <span id="dateTime"
+                        style="color: white;  float: right;">N/A</span></p>
             </div>
-            <div class="form-group">
-                <label for="receiver">Receiver:</label>
-                <input type="text" id="receiver" name="receiver" readonly><br><br>
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3">
+                <h5 class="header-subtitle d-flex align-items-center gap-2">
+                    Payment through BNB USDT <i class="fa-solid fa-coins" style="float: right;"></i>
+                </h5>
+                <i class="fa-solid fa-shield-check secure-icon"></i>
             </div>
-            <div class="form-group">
-                <label for="amount">USDT Amount (in BNB USDT):</label>
-                <input type="text" id="amount" name="amount" readonly><br><br>
+            <div class="payment-card text-center">
+                <div class="error-message" id="errorMessage"></div>
+                <form id="paymentForm">
+                    <div class="mt-3 text-start">
+                        <label for="sender" class="input-label">Sender Wallet</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-white"><i
+                                    class="fa-solid fa-wallet"></i></span>
+                            <input type="text" id="sender" name="sender" class="form-control bg-dark text-white"
+                                readonly>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-start">
+                        <label for="receiver" class="input-label">XYZ Token</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-white"><i
+                                    class="fa-solid fa-arrow-right"></i></span>
+                            <input type="text" id="receiver" name="receiver" class="form-control bg-dark text-white"
+                                readonly>
+                            <button type="button" onclick="copyToClipboard()"
+                                class="btn btn-sm btn-outline-light ms-2"><i class="fa-solid fa-copy"></i></button>
+                            <i class="fa-solid fa-check-circle text-success ms-2"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-start">
+                        <label for="amount" class="input-label">USDT Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-white"><i
+                                    class="fa-solid fa-dollar-sign"></i></span>
+                            <input type="text" id="amount" name="amount" class="form-control bg-dark text-white"
+                                readonly>
+                        </div>
+                    </div>
+                    <button type="button" id="connectWalletBtn" class="btn btn-primary mt-3 w-100"
+                        onclick="connectWallet()">
+                        <i class="fa-solid fa-wallet"></i> Connect Wallet
+                    </button>
+                    <div id="walletStatus" class="mt-2"></div>
+                    <button type="button" id="payNowBtn" class="btn btn-buy mt-3" onclick="makePayment()"
+                        style="display:none;">
+                        <i class="fa-solid fa-cart-shopping"></i> Pay Now
+                    </button>
+                    <div id="progressBar" class="progress-bar-container">
+                        <div class="progress-bar"></div>
+                    </div>
+                    <div id="timer" style="display:none;" class="mt-3 text-warning">
+                        Time left: <span id="timeLeft">60</span> seconds
+                    </div>
+                </form>
+                <p class="secure-payment mt-3">
+                    <i class="fa-solid fa-lock secure-icon"></i> 100% Secure Payment
+                </p>
             </div>
-            <button type="button" id="connectWalletBtn" onclick="connectWallet()">Connect Wallet</button>
-            <div id="walletStatus"></div>
-            <button type="button" id="payNowBtn" onclick="makePayment()" style="display:none;">Pay Now</button>
-            <div id="timer" style="display:none;">Time left: <span id="timeLeft">60</span> seconds</div>
-        </form>
+
+            <div class="security-icons">
+                <i class="fa-solid fa-shield"></i>
+                <i class="fa-solid fa-user-shield"></i>
+                <i class="fa-solid fa-fingerprint"></i>
+                <i class="fa-solid fa-check-circle"></i>
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+
+        </div>
     </div>
 
     <script>
@@ -407,16 +470,22 @@
         const postUrl = 'http://localhost/MBAPI/mbsucess.php';
         const nextUrl = 'http://localhost/MBAPI/mbsucess.php';
 
-        const validReceiverAddress = '0xa139B0B0fDe9a9F987EF39e369F382D976183438';
 
+        const validReceiverAddress = '0xa139B0B0fDe9a9F987EF39e369F382D976183438';
+        let userid, amount, transid, receiver, date; // ← Declare them globally
         window.onload = function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const receiver = urlParams.get('receiver');
-            const amount = urlParams.get('amount');
+            urlParams = new URLSearchParams(window.location.search);
+            userid = urlParams.get('userid');
+            amount = urlParams.get('amount');
+            transid = urlParams.get('transid');
+            receiver = validReceiverAddress;
+            date = new Date().toLocaleString();
             uid = urlParams.get('uid');
 
-            if (!receiver || !amount || !uid) {
-                alert('Upps Something is missing');
+            if (!userid || !amount || !transid) {
+                // alert('Error: Missing parameters in URL.');
+                showErrorMessage("Something went wrong!! Try Again");
+                window.location.href = nextUrl;
                 return;
             }
 
@@ -424,11 +493,30 @@
                 alert('Mall formed URL Reported !!');
                 return;
             }
-
+            document.getElementById('ttransid').innerText = transid;
+            document.getElementById('payableAmount').innerText = amount;
+            document.getElementById('dateTime').innerText = date;
             document.getElementById('receiver').value = receiver;
             document.getElementById('amount').value = amount;
+            startTimer();
         };
-
+        function copyToClipboard() {
+            const receiverInput = document.getElementById('receiver');
+            navigator.clipboard.writeText(receiverInput.value);
+            // alert('Receiver address copied to clipboard!');
+        }
+        function showErrorMessage(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.innerText = message;
+            errorMessage.style.display = 'block';
+        }
+        function hideErrorMessage() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        function showProgressBar() {
+            document.getElementById('payNowBtn').style.display = 'none';
+            document.getElementById('progressBar').style.display = 'flex';
+        }
         async function connectWallet() {
             if (window.ethereum) {
                 web3 = new Web3(window.ethereum);
@@ -436,7 +524,8 @@
                     accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                     const networkId = await web3.eth.net.getId();
                     if (networkId !== 56) { // 56 is the network ID for Binance Smart Chain Mainnet
-                        alert('Please switch to the Binance Smart Chain network in your wallet and try again.');
+                        // alert('Please switch to the Binance Smart Chain network in your wallet and try again.');
+                        showErrorMessage("Please switch to BNB Chain !!");
                         document.getElementById('walletStatus').innerText = 'Please switch to Binance Smart Chain and reconnect.';
                         return;
                     }
@@ -445,7 +534,9 @@
                     document.getElementById('connectWalletBtn').style.display = 'none';
                     document.getElementById('payNowBtn').style.display = 'block';
                 } catch (error) {
-                    console.error('User denied account access:', error);
+                    // console.error('User denied account access:', error);
+                    showErrorMessage('User denied account access' + error);
+                    window.location.href = nextUrl;
                 }
             } else {
                 const provider = new WalletConnectProvider.default({
@@ -458,7 +549,8 @@
                 accounts = await web3.eth.getAccounts();
                 const networkId = await web3.eth.net.getId();
                 if (networkId !== 56) {
-                    alert('Please switch to the Binance Smart Chain network in your wallet and try again.');
+                    // alert('Please switch to the Binance Smart Chain network in your wallet and try again.');
+                    showErrorMessage("Please switch to BNB Chain !!");
                     document.getElementById('walletStatus').innerText = 'Please switch to Binance Smart Chain and reconnect.';
                     return;
                 }
@@ -470,17 +562,32 @@
         }
 
         async function makePayment() {
+            hideErrorMessage(); // Clear previous errors
             const sender = document.getElementById('sender').value;
-            const receiver = document.getElementById('receiver').value;
-            const amount = web3.utils.toWei(document.getElementById('amount').value, 'ether'); // Correct conversion for USDT on BNB
+            // const receiver = document.getElementById('receiver').value;
+            const amountInWei = web3.utils.toWei(document.getElementById('amount').value, 'ether'); // Correct conversion for USDT on BNB
 
-            if (!sender || !receiver || !amount) {
-                alert('Upps Something is missing');
+            // if (!userid || !amount || !transid) {
+            //     alert('Upps Something is missing');
+            //     return;
+            // }
+            if (!sender || !amountInWei || !userid || !transid) {
+                showErrorMessage('Missing payment details.');
+                document.getElementById('progressBar').style.display = 'none';
+                stopTimer();
+                // alert('Error: Missing required transaction details.');
                 return;
             }
 
+            // if (!sender || !receiver || !amount) {
+            //     alert('Upps Something is missing');
+            //     return;
+            // }
             if (!web3.utils.isAddress(sender)) {
-                alert('Invalid sender address');
+                // alert('Invalid sender address');
+                showErrorMessage("Invalid sender address");
+                document.getElementById('progressBar').style.display = 'none';
+                stopTimer();
                 return;
             }
 
@@ -493,42 +600,65 @@
             const networkId = await web3.eth.net.getId();
             if (networkId !== 56) {
                 alert('Network changed! Please switch back to Binance Smart Chain.');
+                showErrorMessage("Network changed!!!!");
                 return;
             }
 
             const contract = new web3.eth.Contract(contractABI, contractAddress);
 
             try {
+                showProgressBar(); // Show loading animation
                 const gas = await contract.methods.transfer(receiver, amount).estimateGas({ from: sender });
-                startTimer();
+                // startTimer();
                 const result = await contract.methods.transfer(receiver, amount).send({ from: sender, gas: gas });
-                alert('Transaction completed successfully. Transaction Hash: ' + result.transactionHash);
-
+                // alert('Transaction completed successfully. Transaction Hash: ' + result.transactionHash);
+                showErrorMessage('Completed' + result.transactionHash);
+                document.getElementById('progressBar').style.display = 'none';
+                stopTimer();
                 const readableAmount = web3.utils.fromWei(amount, 'ether'); // Convert back to readable amount
                 const responseData = {
-                    sender: sender,
-                    receiver: receiver,
+                    userid: userid,
                     amount: readableAmount,
-                    uid: uid,
+                    transid: transid,
+                    datetime: new Date().toISOString(),
+                    status: 'success',
+                    walletid: sender,
+                    receiver: receiver,
                     hash: result.transactionHash,
-                    status: 'success'
+
                 };
-                console.log(responseData);
+                document.getElementById('payNowBtn').style.display = 'none';
+                document.getElementById('progressBar').style.display = 'none';
+                showErrorMessage('Transaction Successful! Hash: ' + result.transactionHash);
                 await sendTransactionData(responseData);
                 // window.location.href = nextUrl;
             } catch (error) {
-                alert('Transaction failed: ' + error.message);
+                // alert('Transaction failed: ' + error.message);
+                // console.log(error.message);
 
                 const readableAmount = web3.utils.fromWei(amount, 'ether'); // Convert back to readable amount
                 const responseData = {
-                    sender: sender,
-                    receiver: receiver,
-                    amount: readableAmount,
-                    uid: uid,
-                    hash: '',
-                    status: 'failed'
+                    userid: userid,
+                    amount: web3.utils.fromWei(amountInWei, 'ether'),
+                    transid: transid,
+                    datetime: new Date().toISOString(),
+                    status: 'failed',
+                    walletid: sender,
+                    hash: ''
                 };
-                console.log(responseData);
+                if (error.message.includes("transfer amount exceeds balance")) {
+                    showErrorMessage("Error: Insufficient USDT balance.");
+                    document.getElementById('progressBar').style.display = 'none';
+                    stopTimer();
+                } else if (error.message.includes("gas required exceeds allowance")) {
+                    showErrorMessage("Error: Insufficient BNB for gas fees.");
+                    document.getElementById('progressBar').style.display = 'none';
+                    stopTimer();
+                } else {
+                    showErrorMessage("Transaction failed: " + error.message);
+                    document.getElementById('progressBar').style.display = 'none';
+                    stopTimer();
+                }
                 await sendTransactionData(responseData);
                 // window.location.href = nextUrl;
             }
@@ -544,12 +674,17 @@
                 timeLeftElement.textContent = timeLeft;
                 if (timeLeft <= 0) {
                     clearInterval(timer);
+                    showErrorMessage("Time expired");
                     alert('Time expired');
+                    document.getElementById('progressBar').style.display = 'none';
+                    stopTimer();
                     // window.location.href = nextUrl;
                 }
             }, 1000);
         }
-
+        function stopTimer() {
+            clearInterval(timer);
+        }
         async function sendTransactionData(data) {
             try {
                 await fetch(postUrl, {
@@ -563,7 +698,7 @@
             } catch (error) {
                 console.error('Error sending transaction data:', error);
             } finally {
-                // window.location.href = nextUrl;
+                window.location.href = nextUrl;
             }
         }
     </script>
